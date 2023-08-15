@@ -81,7 +81,7 @@ Create a new Nginx server block configuration file. You can name it something li
 
 sudo nano /etc/nginx/sites-available/demo_app.conf
 
-#Configure Nginx to Redirect HTTP Requests to Gunicorn:
+# Configure Nginx to Redirect HTTP Requests to Gunicorn:
 
 Add the following configuration to the file, replacing placeholders as needed:
 Replace "your_domain.com" with your actual domain
