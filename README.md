@@ -1,128 +1,110 @@
-# OCI-LoadBalancer-SSL-DNS-WAF-NGINX
-Project with OCI
+# Project: Hosting Flask Web App with SSL and DNS
+Prerequisites:
 
-Project Name: Host Flask Webapp on with SSL and dns
+- Import SSL Certificate in Oracle Cloud Infrastructure (OCI).
+- Familiarity with creating and using Bastion Service.
+- Basic understanding of OCI fundamentals.
 
-# Prerequisets:
-Import Certificate in OCI.
+# Step 1: Set Up Web Server
+- Create a new Virtual Cloud Network (VCN), either manually or with the Wizard, including private and public subnets, IG gateway, and service gateway.
+- Set up a new OCI instance with the specified configuration (A1.Flex, 1 OCPU, 6GB Memory, Ubuntu) in the private subnet. Include Bastion Agent and choose SSH keys.
+- Create a Bastion session and connect to the instance.
 
-Create Loadbalancer:
-Layer 7 -> Choose a name -> Select Public -> Get an IP -> Select VCN -> Select WRR -> rest default and next -> Select HTTPS and select your Cert (if you dont have it set up go to cert overview and set it up)
-
-Create DNS Zone:
-In DNS create a public DNS Zone with your domain.
-
-After that go to your registrant and create at least 2 NS Records with the Nameserver for your (sub)domain.
-Create A record that points to Load balancer IP
-
-# 1. Set up Webserver
-1.1 Create Instance and Load Balancer.
-Create a new Oracle Cloud Infrastructure (OCI) instance with the specifications you mentioned (A1.Flex, 1 OCPU, 6GB Memory, Oracle Linux 8.0).
-Set up a new Virtual Cloud Network (VCN).
-Add rule in Security List to allow ingress Rule for port 443,80,5000
-Generate SSH Keys
-
-
-1.2 Setup Webserver
 
 # Allow incoming HTTP and HTTPS traffic
+```bash
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 5000 -j ACCEPT
+```
+```bash
 sudo iptables -I INPUT 7 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+```
+```bash
 sudo netfilter-persistent save
+```
 
-# Update the package list and install Python 3 and pip
+# Install required packages
+```bash
 sudo apt update
-sudo apt install -y python3-pip
+```
+```bash
+sudo apt install -y python3-pip nginx
+```
 
 # Install virtualenv and virtualenvwrapper
+```bash
 pip3 install virtualenv virtualenvwrapper
-
-# Configure virtualenvwrapper in .bashrc
+```
+```bash
 echo 'export WORKON_HOME=~/envs' >> ~/.bashrc
+```
+```bash
 echo 'export PATH=$PATH:/home/ubuntu/.local/bin' >> ~/.bashrc
-echo 'export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3' >> ~/.bashrc
-echo 'export VIRTUALENVWRAPPER_VIRTUALENV_ARGS=" -p /usr/bin/python3 "' >> ~/.bashrc
+```
+```bash
 echo 'source /home/ubuntu/.local/bin/virtualenvwrapper.sh' >> ~/.bashrc
+```
+```bash
 source ~/.bashrc
+```
+# Create and activate a virtual environment
 
-# Create a new virtual environment
+```bash
 mkvirtualenv flask01
-
-# Install Flask
-pip3 install Flask
-
-# Clone your Flask project repository
-git clone <your project>
-
-cd <project-name>
-pip install -r requirements.txt if needed
-
-# Activate the virtual environment if not active
+```
+```bash
 workon flask01
-
-# Set up the environment variable for your Flask app
+```
+# Install Flask and Gunicorn
+```bash
+pip3 install Flask gunicorn
+```
+# Clone and setup your Flask project
+```bash
+git clone <your_project_repository>
+```
+```bash
+cd flask-project
+```
+```bash
+pip install -r requirements.txt
+```
+```bash
 export FLASK_APP=app.py
-
-# Run the Flask app with Gunicorn (install Gunicorn if not already installed)
-pip3 install gunicorn
-
-sudo /home/ubuntu/envs/flask01/bin/gunicorn -w 4 -b 0.0.0.0:5000 app:app
-
-If everything is working fine, Ctrl + C and install nginx
-
-
-# Install Nginx:
-
-sudo apt-get update
-sudo apt-get install nginx
-
-Create a Configuration File for Your App:
-Create a new Nginx server block configuration file. You can name it something like demo_app.conf:
-
+```
+# Run Flask app with Gunicorn
+```bash
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+# Install and configure Nginx
+```bash
 sudo nano /etc/nginx/sites-available/demo_app.conf
-
-# Configure Nginx to Redirect HTTP Requests to Gunicorn:
-
-Add the following configuration to the file, replacing placeholders as needed:
-Replace "your_domain.com" with your actual domain
-
-
+```
+- In demo_app.conf:
+```bash
 server {
-
    listen 80;
-   
-   server_name DOMAIN NAME;  # Your domain name
+   server_name YOUR_DOMAIN_NAME;
 
    location / {
-   
-       proxy_pass http://127.0.0.1:5000;  # Gunicorn binding address and port
+       proxy_pass http://127.0.0.1:5000;
        proxy_set_header Host $host;
        proxy_set_header X-Real-IP $remote_addr;
        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       # Additional proxy settings if needed
-       
    }
 }
+```
 
-
-# Enable the Configuration and Test:
-
-Create a symbolic link to enable the Nginx configuration:
+- Activate and Check
+```bash
 sudo ln -s /etc/nginx/sites-available/demo_app.conf /etc/nginx/sites-enabled
-
-
-Test the Nginx configuration to ensure there are no syntax errors:
 sudo nginx -t
-
-
-If the test is successful, restart Nginx to apply the new configuration:
 sudo service nginx restart
-
-
-
-# Make automatically start up on boot
+```
+# Configure Gunicorn to start on boot
+```bash
 sudo nano /etc/systemd/system/flask-app.service
-
+```
+```bash
 [Unit]
 Description=Gunicorn instance to serve Flask application
 After=network.target
@@ -136,37 +118,34 @@ ExecStart=/home/ubuntu/envs/flask01/bin/gunicorn --workers 4 --bind 0.0.0.0:5000
 
 [Install]
 WantedBy=multi-user.target
-
-# Save
-
+```
+- Check health and activate
+```bash
 sudo systemctl daemon-reload
-
 sudo systemctl enable flask-app
 sudo systemctl start flask-app
-
 sudo systemctl status flask-app
-
-Now, Gunicorn will start automatically on machine startup using the systemd service. You can also manage the service with commands like stop, restart, and status using systemctl.
-
-
-Check if everything is working properly
+```
 
 
 # 2. Create Custom Image, Instance C0nfiguration, Instance Pool and Autoscaling.
 
-1. Create Custom Image from the Server -> Wait till running and check if u can see the webpage: <publicip:5000>
+# Create Custom Image from the Server
+- Wait till running and check if u can see the webpage: <publicip:5000>
 
-2. From the Current Instance select Create Instance Configuration
+# From the Current Instance select Create Instance Configuration
+- Set up the Instance Config
 
-3.
-Create Instance Pool with the freshly created Instance Config -> Choose 2 Instances -> Next
-Configure first AD and than add a second one
-Select Attach Load Balancer -> Select the Load Balancer, Backedn Set and Port 80 -> Next + Create
+# Create Instance Pool with the freshly created Instance Config
+- Choose 2 Instances -> Next
+- Select Attach Load Balancer -> Select the Load Balancer, Backend Set and Port 80 -> Next + Create
 
-4. 
-In Compute select Autoscaling Configurations
-Choose Instance Pool
-Metric Based Autoscaling -> -> CPU Utilization -> Scale Out Rule > 70 -> Scale Down Rule < 20 -> Min. 1 | Max. 2 | Start 2
+# Configure Autoscaling Configurations
+- Navigate to Autoscaling Configurations in Compute and start the process
+- Choose Instance Pool
+- Metric Based Autoscaling
+- CPU Utilization -> Scale Out Rule > 70 -> Scale Down Rule < 20 -> Min. 1 | Max. 2 | Start 2
 
-5.
-Terminate the first Instance and the one we created with the custom image.
+# Clean Up instances that are not needed
+- Terminate the 2 instances we first created:
+- The first Instance that was used to create custom image and the one we created with the custom image.
