@@ -138,8 +138,10 @@ sudo systemctl status flask-app
 
 # 2. Create Custom Image, Instance C0nfiguration, Instance Pool and Autoscaling.
 
-# Create Custom Image from the Server
-- Wait till running and check if u can see the webpage: <publicip:5000>
+# Create Custom Image from the Server and launch new Instance with it
+- Create a custom Image from the Webserver and use it to launch a new instance.
+Here you could start a little Clean-UP and delete the first instance
+- Wait until the new Webserver running and check if you can see the webpage: <publicip:5000>
 
 # From the Current Instance select Create Instance Configuration
 - Set up the Instance Config
@@ -155,5 +157,5 @@ sudo systemctl status flask-app
 - CPU Utilization -> Scale Out Rule > 70 -> Scale Down Rule < 20 -> Min. 1 | Max. 2 | Start 2
 
 # Clean Up instances that are not needed
-- Terminate the 2 instances we first created:
+- Terminate the 2 instances we first created (that are not part of the instance pool) if not already done:
 - The first Instance that was used to create custom image and the one we created with the custom image.
