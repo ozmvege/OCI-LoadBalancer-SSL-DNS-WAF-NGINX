@@ -1,5 +1,13 @@
-# Project: Hosting Flask Web App with SSL and DNS
-Prerequisites:
+# Hosting Flask Web Application on OCI with following OCI services:
+- DNS Zone
+- Layer 7 Load Balancer
+- Custon Images
+- Instance Configuration and Instance Pools
+- Metric Based Autoscaling
+- Instances and VCN
+- Bastion
+
+# Prerequisites:
 
 - Import SSL Certificate in Oracle Cloud Infrastructure (OCI).
 - Familiarity with creating and using Bastion Service.
