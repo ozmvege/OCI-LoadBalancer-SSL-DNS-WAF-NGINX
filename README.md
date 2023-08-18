@@ -1,4 +1,4 @@
-# Hosting Flask Web Application on OCI with following OCI services:
+# Hosting a Flask Web Application on OCI with the following OCI services:
 - DNS Zone
 - Layer 7 Load Balancer
 - Custon Images
