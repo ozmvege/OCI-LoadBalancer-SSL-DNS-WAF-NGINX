@@ -14,7 +14,7 @@
 - Basic understanding of OCI fundamentals.
 
 # Step 1: Set Up Web Server
-- Create a new Virtual Cloud Network (VCN), either manually or with the Wizard, including private and public subnets, IG gateway, and service gateway.
+- Create a new Virtual Cloud Network with the Wizard to abstract away some networking.
 - Set up a new OCI instance with the specified configuration (A1.Flex, 1 OCPU, 6GB Memory, Ubuntu) in the private subnet. Include Bastion Agent and choose SSH keys.
 - Create a Bastion session and connect to the instance.
 
@@ -136,18 +136,18 @@ sudo systemctl status flask-app
 ```
 
 
-# 2. Create Custom Image, Instance C0nfiguration, Instance Pool and Autoscaling.
+# 2. Create Custom Image, Instance Configuration, Instance Pool and Autoscaling.
 
 # Create Custom Image from the Server and launch new Instance with it
 - Create a custom Image from the Webserver and use it to launch a new instance.
-Here you could start a little Clean-UP and delete the first instance
-- Wait until the new Webserver running and check if you can see the webpage: <publicip:5000>
+You could start a little Clean-Up and delete the first instance.
+- Wait until the new Webserver is running and check if you can see the webpage: <publicip:5000>
 
-# From the Current Instance select Create Instance Configuration
-- Set up the Instance Config
+# From the Current Instance Menu select Create Instance Configuration
+- Set up the Instance Configuration
 
 # Create Instance Pool with the freshly created Instance Config
-- Choose 2 Instances -> Next
+- Choose 2 Instances
 - Select Attach Load Balancer -> Select the Load Balancer, Backend Set and Port 80 -> Next + Create
 
 # Configure Autoscaling Configurations
